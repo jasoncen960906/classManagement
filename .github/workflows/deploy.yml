@@ -20,10 +20,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install and Build
         run: |
-          npm install
+          npm ci
           npm run build
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
