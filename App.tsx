@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   Users,
   UserCheck,
@@ -9,13 +8,10 @@ import {
   History,
   RefreshCw,
   Trash2,
-  Sparkles,
-  ChevronRight,
   Info
 } from 'lucide-react';
 import { Student, Group, ViewMode, PickerHistoryItem } from './types';
 import { parseCSV } from './utils/csvParser';
-import { generateQuestion } from './services/geminiService';
 import confetti from 'canvas-confetti';
 
 const App: React.FC = () => {
@@ -28,9 +24,6 @@ const App: React.FC = () => {
   const [isPicking, setIsPicking] = useState(false);
   const [repeatMode, setRepeatMode] = useState<'repeat' | 'no-repeat'>('no-repeat');
   const [pool, setPool] = useState<Student[]>([]);
-  const [topic, setTopic] = useState('');
-  const [aiQuestion, setAiQuestion] = useState('');
-  const [isGeneratingQuestion, setIsGeneratingQuestion] = useState(false);
 
   // Grouping State
   const [groupSize, setGroupSize] = useState(4);
@@ -89,7 +82,6 @@ const App: React.FC = () => {
     if (students.length === 0) return;
 
     setIsPicking(true);
-    setAiQuestion('');
 
     // "Drum roll" effect simulation
     let currentPool = repeatMode === 'repeat' ? students : pool;
@@ -123,26 +115,12 @@ const App: React.FC = () => {
       spread: 70,
       origin: { y: 0.6 }
     });
-
-    // Auto-generate AI question if topic exists
-    if (topic.trim()) {
-      handleGenerateQuestion();
-    }
-  };
-
-  const handleGenerateQuestion = async () => {
-    if (!topic.trim()) return;
-    setIsGeneratingQuestion(true);
-    const q = await generateQuestion(topic);
-    setAiQuestion(q || '');
-    setIsGeneratingQuestion(false);
   };
 
   const resetPool = () => {
     setPool(students);
     setLastPicked(null);
     setHistory([]);
-    setAiQuestion('');
   };
 
   // Grouping Logic
@@ -210,7 +188,7 @@ const App: React.FC = () => {
             onClick={() => setView(ViewMode.PICKER)}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${view === ViewMode.PICKER ? 'bg-white/20 shadow-lg' : 'hover:bg-white/10'}`}
           >
-            <Sparkles className="w-5 h-5" />
+            <RefreshCw className="w-5 h-5" />
             <span className="font-medium">隨機點名</span>
           </button>
           <button
@@ -224,7 +202,6 @@ const App: React.FC = () => {
 
         <div className="mt-auto pt-6 border-t border-indigo-800 text-xs text-indigo-300">
           <p>當前學生總數: <span className="text-white font-bold">{students.length}</span></p>
-          <p className="mt-1">Powered by Gemini AI</p>
         </div>
       </nav>
 
@@ -240,7 +217,7 @@ const App: React.FC = () => {
             </h2>
             <p className="text-slate-500 mt-1">
               {view === ViewMode.ROSTER && "上傳CSV或手動輸入學生姓名（支持Excel導出的中文格式）"}
-              {view === ViewMode.PICKER && "隨機挑選學生回答問題，支持AI出題"}
+              {view === ViewMode.PICKER && "隨機挑選學生回答問題"}
               {view === ViewMode.GROUPER && "快速為班級學生分配小組並導出結果"}
             </p>
           </div>
@@ -396,43 +373,45 @@ const App: React.FC = () => {
                   </button>
                 </div>
 
-                {/* AI Question Section */}
-                <div className="bg-gradient-to-br from-indigo-50 to-white p-8 rounded-3xl border border-indigo-100 shadow-sm">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-bold text-indigo-900 flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-indigo-500" />
-                      AI 智能挑戰題
+                {/* Student Visual Tracker */}
+                <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-slate-700 flex items-center gap-2">
+                      <Users className="w-5 h-5 text-indigo-500" />
+                      名單狀態
                     </h3>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-indigo-400 font-medium">基於當前課題生成問題</span>
+                    <div className="flex gap-4 text-xs font-medium">
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                        <span className="text-slate-600">待抽取 ({pool.length})</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 rounded-full bg-slate-200" />
+                        <span className="text-slate-400">已抽取 ({students.length - pool.length})</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex gap-3 mb-6">
-                    <input
-                      type="text"
-                      value={topic}
-                      onChange={(e) => setTopic(e.target.value)}
-                      placeholder="輸入當前課程的主題 (例如: 總體經濟學, 行銷管理...)"
-                      className="flex-1 bg-white border border-indigo-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                    />
-                    <button
-                      onClick={handleGenerateQuestion}
-                      disabled={!topic.trim() || isGeneratingQuestion}
-                      className="bg-indigo-500 text-white px-6 py-3 rounded-xl hover:bg-indigo-600 transition-all disabled:opacity-50 flex items-center gap-2"
-                    >
-                      {isGeneratingQuestion ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ChevronRight className="w-4 h-4" />}
-                      生成
-                    </button>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                    {students.map(student => {
+                      const isAvailable = pool.some(p => p.id === student.id);
+                      return (
+                        <div
+                          key={student.id}
+                          className={`
+                            px-2 py-3 rounded-xl text-center text-base font-semibold transition-all duration-300
+                            ${isAvailable
+                              ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-sm'
+                              : 'bg-slate-50 text-slate-300 border border-slate-100 opacity-50 grayscale'
+                            }
+                          `}
+                          title={student.name}
+                        >
+                          {student.name}
+                        </div>
+                      );
+                    })}
                   </div>
-
-                  {aiQuestion && (
-                    <div className="bg-white p-6 rounded-2xl border border-indigo-100 shadow-inner">
-                      <p className="text-slate-700 leading-relaxed font-medium italic">
-                        "{aiQuestion}"
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -443,7 +422,7 @@ const App: React.FC = () => {
                     <History className="w-5 h-5 text-slate-400" />
                     點名紀錄
                   </h3>
-                  <div className="space-y-4">
+                  <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                     {history.length === 0 ? (
                       <p className="text-slate-400 text-sm italic">尚無紀錄</p>
                     ) : (
