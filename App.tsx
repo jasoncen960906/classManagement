@@ -1,14 +1,14 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Users, 
-  UserCheck, 
-  Layers, 
-  Upload, 
+import {
+  Users,
+  UserCheck,
+  Layers,
+  Upload,
   Download,
-  History, 
-  RefreshCw, 
-  Trash2, 
+  History,
+  RefreshCw,
+  Trash2,
   Sparkles,
   ChevronRight,
   Info
@@ -16,12 +16,13 @@ import {
 import { Student, Group, ViewMode, PickerHistoryItem } from './types';
 import { parseCSV } from './utils/csvParser';
 import { generateQuestion } from './services/geminiService';
+import confetti from 'canvas-confetti';
 
 const App: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [view, setView] = useState<ViewMode>(ViewMode.ROSTER);
   const [history, setHistory] = useState<PickerHistoryItem[]>([]);
-  
+
   // Picker State
   const [lastPicked, setLastPicked] = useState<Student | null>(null);
   const [isPicking, setIsPicking] = useState(false);
@@ -43,7 +44,7 @@ const App: React.FC = () => {
     try {
       const buffer = await file.arrayBuffer();
       let text = '';
-      
+
       try {
         // First try to decode as UTF-8 (strict mode)
         const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
@@ -66,7 +67,7 @@ const App: React.FC = () => {
       console.error("File reading error:", error);
       alert("讀取文件出錯，請重試。");
     }
-    
+
     // Reset input value so the same file can be uploaded again if needed
     e.target.value = '';
   };
@@ -76,7 +77,7 @@ const App: React.FC = () => {
     const formData = new FormData(e.currentTarget);
     const text = formData.get('studentNames') as string;
     if (!text.trim()) return;
-    
+
     const parsed = parseCSV(text);
     setStudents(prev => [...prev, ...parsed]);
     setPool(prev => [...prev, ...parsed]);
@@ -86,10 +87,10 @@ const App: React.FC = () => {
   // Student Picker Logic
   const pickStudent = async () => {
     if (students.length === 0) return;
-    
+
     setIsPicking(true);
     setAiQuestion('');
-    
+
     // "Drum roll" effect simulation
     let currentPool = repeatMode === 'repeat' ? students : pool;
     if (currentPool.length === 0 && repeatMode === 'no-repeat') {
@@ -103,9 +104,9 @@ const App: React.FC = () => {
 
     const randomIndex = Math.floor(Math.random() * currentPool.length);
     const picked = currentPool[randomIndex];
-    
+
     setLastPicked(picked);
-    
+
     if (repeatMode === 'no-repeat') {
       setPool(prev => prev.filter(s => s.id !== picked.id));
     }
@@ -117,6 +118,11 @@ const App: React.FC = () => {
     }, ...prev].slice(0, 20));
 
     setIsPicking(false);
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
 
     // Auto-generate AI question if topic exists
     if (topic.trim()) {
@@ -142,10 +148,10 @@ const App: React.FC = () => {
   // Grouping Logic
   const generateGroupsAction = () => {
     if (students.length === 0) return;
-    
+
     const shuffled = [...students].sort(() => 0.5 - Math.random());
     const groups: Group[] = [];
-    
+
     for (let i = 0; i < shuffled.length; i += groupSize) {
       groups.push({
         id: Math.floor(i / groupSize) + 1,
@@ -193,21 +199,21 @@ const App: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <button 
+          <button
             onClick={() => setView(ViewMode.ROSTER)}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${view === ViewMode.ROSTER ? 'bg-white/20 shadow-lg' : 'hover:bg-white/10'}`}
           >
             <Users className="w-5 h-5" />
             <span className="font-medium">學生名冊</span>
           </button>
-          <button 
+          <button
             onClick={() => setView(ViewMode.PICKER)}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${view === ViewMode.PICKER ? 'bg-white/20 shadow-lg' : 'hover:bg-white/10'}`}
           >
             <Sparkles className="w-5 h-5" />
             <span className="font-medium">隨機點名</span>
           </button>
-          <button 
+          <button
             onClick={() => setView(ViewMode.GROUPER)}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${view === ViewMode.GROUPER ? 'bg-white/20 shadow-lg' : 'hover:bg-white/10'}`}
           >
@@ -238,7 +244,7 @@ const App: React.FC = () => {
               {view === ViewMode.GROUPER && "快速為班級學生分配小組並導出結果"}
             </p>
           </div>
-          
+
           {students.length === 0 && view !== ViewMode.ROSTER && (
             <div className="flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-lg border border-amber-200">
               <Info className="w-4 h-4" />
@@ -249,14 +255,14 @@ const App: React.FC = () => {
 
         {/* Dynamic Views */}
         <div className="space-y-6">
-          
+
           {/* VIEW: ROSTER */}
           {view === ViewMode.ROSTER && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1 space-y-6">
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                   <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <Upload className="w-4 h-4 text-indigo-600" /> 
+                    <Upload className="w-4 h-4 text-indigo-600" />
                     批量導入
                   </h3>
                   <label className="block w-full cursor-pointer">
@@ -272,7 +278,7 @@ const App: React.FC = () => {
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                   <h3 className="font-semibold mb-4">手動新增</h3>
                   <form onSubmit={handleManualInput} className="space-y-4">
-                    <textarea 
+                    <textarea
                       name="studentNames"
                       placeholder="每行一個姓名，例如：&#10;王小明&#10;李大華"
                       rows={5}
@@ -288,8 +294,8 @@ const App: React.FC = () => {
               <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center">
                   <h3 className="font-semibold">當前學生列表 ({students.length})</h3>
-                  <button 
-                    onClick={() => { if(confirm("確定要清空名單嗎？")) { setStudents([]); setPool([]); } }}
+                  <button
+                    onClick={() => { if (confirm("確定要清空名單嗎？")) { setStudents([]); setPool([]); } }}
                     className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -315,7 +321,7 @@ const App: React.FC = () => {
                             <td className="px-6 py-4 font-medium">{s.name}</td>
                             <td className="px-6 py-4 text-slate-500">{s.studentId || '-'}</td>
                             <td className="px-6 py-4">
-                              <button 
+                              <button
                                 onClick={() => setStudents(prev => prev.filter(item => item.id !== s.id))}
                                 className="text-slate-400 hover:text-red-500"
                               >
@@ -338,7 +344,7 @@ const App: React.FC = () => {
               <div className="lg:col-span-3 space-y-6">
                 <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-200 text-center relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-2 bg-indigo-500" />
-                  
+
                   <div className="mb-8">
                     <h3 className="text-slate-400 font-medium mb-2">點名結果</h3>
                     <div className="h-40 flex items-center justify-center">
@@ -360,20 +366,20 @@ const App: React.FC = () => {
 
                   <div className="flex flex-wrap justify-center gap-4 mb-8">
                     <div className="inline-flex bg-slate-100 p-1 rounded-xl">
-                      <button 
+                      <button
                         onClick={() => setRepeatMode('no-repeat')}
                         className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${repeatMode === 'no-repeat' ? 'bg-white shadow text-indigo-600' : 'text-slate-500'}`}
                       >
                         不重複抽取
                       </button>
-                      <button 
+                      <button
                         onClick={() => setRepeatMode('repeat')}
                         className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${repeatMode === 'repeat' ? 'bg-white shadow text-indigo-600' : 'text-slate-500'}`}
                       >
                         重複抽取
                       </button>
                     </div>
-                    <button 
+                    <button
                       onClick={resetPool}
                       className="flex items-center gap-2 px-4 py-2 text-slate-500 hover:text-indigo-600 transition-colors text-sm font-medium"
                     >
@@ -381,7 +387,7 @@ const App: React.FC = () => {
                     </button>
                   </div>
 
-                  <button 
+                  <button
                     disabled={students.length === 0 || isPicking}
                     onClick={pickStudent}
                     className="w-full max-w-md mx-auto bg-indigo-600 text-white text-xl font-bold py-6 rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 active:translate-y-0 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -398,19 +404,19 @@ const App: React.FC = () => {
                       AI 智能挑戰題
                     </h3>
                     <div className="flex items-center gap-2">
-                       <span className="text-xs text-indigo-400 font-medium">基於當前課題生成問題</span>
+                      <span className="text-xs text-indigo-400 font-medium">基於當前課題生成問題</span>
                     </div>
                   </div>
 
                   <div className="flex gap-3 mb-6">
-                    <input 
+                    <input
                       type="text"
                       value={topic}
                       onChange={(e) => setTopic(e.target.value)}
                       placeholder="輸入當前課程的主題 (例如: 總體經濟學, 行銷管理...)"
                       className="flex-1 bg-white border border-indigo-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                     />
-                    <button 
+                    <button
                       onClick={handleGenerateQuestion}
                       disabled={!topic.trim() || isGeneratingQuestion}
                       className="bg-indigo-500 text-white px-6 py-3 rounded-xl hover:bg-indigo-600 transition-all disabled:opacity-50 flex items-center gap-2"
@@ -467,12 +473,12 @@ const App: React.FC = () => {
                   <div className="flex-1 space-y-2">
                     <label className="text-sm font-semibold text-slate-600">每組人數</label>
                     <div className="flex items-center gap-4">
-                      <input 
-                        type="range" 
-                        min="2" 
-                        max="10" 
-                        value={groupSize} 
-                        onChange={(e) => setGroupSize(parseInt(e.target.value))} 
+                      <input
+                        type="range"
+                        min="2"
+                        max="10"
+                        value={groupSize}
+                        onChange={(e) => setGroupSize(parseInt(e.target.value))}
                         className="flex-1 accent-indigo-600"
                       />
                       <span className="w-12 text-center font-bold text-indigo-600 bg-indigo-50 py-1 rounded-lg border border-indigo-100">
@@ -481,7 +487,7 @@ const App: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex gap-3">
-                    <button 
+                    <button
                       onClick={generateGroupsAction}
                       disabled={students.length === 0}
                       className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
@@ -489,7 +495,7 @@ const App: React.FC = () => {
                       開始隨機分組
                     </button>
                     {generatedGroups.length > 0 && (
-                      <button 
+                      <button
                         onClick={downloadGroupsCSV}
                         className="bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-xl font-bold hover:bg-slate-50 transition-all flex items-center gap-2"
                       >
@@ -513,10 +519,10 @@ const App: React.FC = () => {
                       </div>
                       <div className="p-4 space-y-2">
                         {group.members.map(member => (
-                          <div key={member.id} className="flex items-center gap-3 text-sm">
-                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-                            <span className="font-medium text-slate-700">{member.name}</span>
-                            <span className="text-[10px] text-slate-400 ml-auto">{member.studentId}</span>
+                          <div key={member.id} className="flex items-center gap-3 p-1">
+                            <div className="w-2 h-2 rounded-full bg-indigo-400" />
+                            <span className="font-semibold text-lg text-slate-800">{member.name}</span>
+                            <span className="text-xs text-slate-400 ml-auto">{member.studentId}</span>
                           </div>
                         ))}
                       </div>
