@@ -31,6 +31,7 @@ const App: React.FC = () => {
   useEffect(() => {
     return () => {
       if (pickIntervalRef.current) clearInterval(pickIntervalRef.current);
+      if (groupIntervalRef.current) clearInterval(groupIntervalRef.current);
     };
   }, []);
   const [pool, setPool] = useState<Student[]>([]);
@@ -38,6 +39,8 @@ const App: React.FC = () => {
   // Grouping State
   const [groupSize, setGroupSize] = useState(4);
   const [generatedGroups, setGeneratedGroups] = useState<Group[]>([]);
+  const [isGrouping, setIsGrouping] = useState(false);
+  const groupIntervalRef = useRef<number | null>(null);
 
   // File Processing Logic
   const processFile = async (file: File) => {
@@ -195,16 +198,44 @@ const App: React.FC = () => {
   const generateGroupsAction = () => {
     if (students.length === 0) return;
 
-    const shuffled = [...students].sort(() => 0.5 - Math.random());
-    const groups: Group[] = [];
+    if (!isGrouping) {
+      setIsGrouping(true);
+      if (groupIntervalRef.current) clearInterval(groupIntervalRef.current);
 
-    for (let i = 0; i < shuffled.length; i += groupSize) {
-      groups.push({
-        id: Math.floor(i / groupSize) + 1,
-        members: shuffled.slice(i, i + groupSize)
+      groupIntervalRef.current = window.setInterval(() => {
+        const shuffled = [...students].sort(() => 0.5 - Math.random());
+        const groups: Group[] = [];
+        for (let i = 0; i < shuffled.length; i += groupSize) {
+          groups.push({
+            id: Math.floor(i / groupSize) + 1,
+            members: shuffled.slice(i, i + groupSize)
+          });
+        }
+        setGeneratedGroups(groups);
+      }, 70); // Rapid playback
+    } else {
+      if (groupIntervalRef.current) {
+        clearInterval(groupIntervalRef.current);
+        groupIntervalRef.current = null;
+      }
+      setIsGrouping(false);
+
+      const shuffled = [...students].sort(() => 0.5 - Math.random());
+      const groups: Group[] = [];
+      for (let i = 0; i < shuffled.length; i += groupSize) {
+        groups.push({
+          id: Math.floor(i / groupSize) + 1,
+          members: shuffled.slice(i, i + groupSize)
+        });
+      }
+      setGeneratedGroups(groups);
+
+      confetti({
+        particleCount: 150,
+        spread: 80,
+        origin: { y: 0.6 }
       });
     }
-    setGeneratedGroups(groups);
   };
 
   const downloadGroupsCSV = () => {
@@ -552,11 +583,15 @@ const App: React.FC = () => {
                     <button
                       onClick={generateGroupsAction}
                       disabled={students.length === 0}
-                      className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+                      className={`px-8 py-3 rounded-xl font-bold transition-all shadow-lg disabled:opacity-50 text-white ${
+                        isGrouping 
+                          ? 'bg-red-500 hover:bg-red-600 shadow-red-200 animate-pulse' 
+                          : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100'
+                      }`}
                     >
-                      开始随机分组
+                      {isGrouping ? "停！" : "开始随机分组"}
                     </button>
-                    {generatedGroups.length > 0 && (
+                    {generatedGroups.length > 0 && !isGrouping && (
                       <button
                         onClick={downloadGroupsCSV}
                         className="bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-xl font-bold hover:bg-slate-50 transition-all flex items-center gap-2"
@@ -570,7 +605,7 @@ const App: React.FC = () => {
               </div>
 
               {generatedGroups.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity ${isGrouping ? 'opacity-30' : 'opacity-100'}`}>
                   {generatedGroups.map(group => (
                     <div key={group.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:border-indigo-300 transition-colors">
                       <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex justify-between items-center">
