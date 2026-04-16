@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Users,
   UserCheck,
@@ -24,7 +24,15 @@ const App: React.FC = () => {
   // Picker State
   const [lastPicked, setLastPicked] = useState<Student | null>(null);
   const [isPicking, setIsPicking] = useState(false);
+  const pickIntervalRef = useRef<number | null>(null);
   const [repeatMode, setRepeatMode] = useState<'repeat' | 'no-repeat'>('no-repeat');
+
+  // Cleanup interval
+  useEffect(() => {
+    return () => {
+      if (pickIntervalRef.current) clearInterval(pickIntervalRef.current);
+    };
+  }, []);
   const [pool, setPool] = useState<Student[]>([]);
 
   // Grouping State
@@ -121,12 +129,9 @@ const App: React.FC = () => {
   };
 
   // Student Picker Logic
-  const pickStudent = async () => {
+  const pickStudent = () => {
     if (students.length === 0) return;
 
-    setIsPicking(true);
-
-    // "Drum roll" effect simulation
     let currentPool = repeatMode === 'repeat' ? students : pool;
     if (currentPool.length === 0 && repeatMode === 'no-repeat') {
       alert("所有学生都已抽过！重新重置名单。");
@@ -134,33 +139,53 @@ const App: React.FC = () => {
       setPool(students);
     }
 
-    // Animation delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    if (!isPicking) {
+      // Start rolling
+      setIsPicking(true);
+      if (pickIntervalRef.current) clearInterval(pickIntervalRef.current);
+      
+      pickIntervalRef.current = window.setInterval(() => {
+        const randomIndex = Math.floor(Math.random() * currentPool.length);
+        setLastPicked(currentPool[randomIndex]);
+      }, 60); // fast playback
+      
+    } else {
+      // Stop rolling
+      if (pickIntervalRef.current) {
+        clearInterval(pickIntervalRef.current);
+        pickIntervalRef.current = null;
+      }
+      
+      // Perform final pick to ensure pure randomness independent of click timing
+      const randomIndex = Math.floor(Math.random() * currentPool.length);
+      const picked = currentPool[randomIndex];
+      setLastPicked(picked);
 
-    const randomIndex = Math.floor(Math.random() * currentPool.length);
-    const picked = currentPool[randomIndex];
+      if (repeatMode === 'no-repeat') {
+        setPool(prev => prev.filter(s => s.id !== picked.id));
+      }
 
-    setLastPicked(picked);
+      setHistory(prev => [{
+        timestamp: Date.now(),
+        studentName: picked.name,
+        mode: repeatMode
+      }, ...prev].slice(0, 20));
 
-    if (repeatMode === 'no-repeat') {
-      setPool(prev => prev.filter(s => s.id !== picked.id));
+      setIsPicking(false);
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
     }
-
-    setHistory(prev => [{
-      timestamp: Date.now(),
-      studentName: picked.name,
-      mode: repeatMode
-    }, ...prev].slice(0, 20));
-
-    setIsPicking(false);
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
   };
 
   const resetPool = () => {
+    if (pickIntervalRef.current) {
+      clearInterval(pickIntervalRef.current);
+      pickIntervalRef.current = null;
+    }
+    setIsPicking(false);
     setPool(students);
     setLastPicked(null);
     setHistory([]);
@@ -380,15 +405,14 @@ const App: React.FC = () => {
                   <div className="mb-8">
                     <h3 className="text-slate-400 font-medium mb-2">点名结果</h3>
                     <div className="h-40 flex items-center justify-center">
-                      {isPicking ? (
-                        <div className="flex flex-col items-center gap-4">
-                          <RefreshCw className="w-12 h-12 text-indigo-500 animate-spin" />
-                          <p className="text-indigo-600 font-bold animate-pulse text-xl">挑选中...</p>
-                        </div>
-                      ) : lastPicked ? (
+                      {(lastPicked || isPicking) ? (
                         <div className="space-y-2">
-                          <p className="text-6xl font-black text-slate-800 tracking-tight">{lastPicked.name}</p>
-                          <p className="text-slate-400">{lastPicked.studentId}</p>
+                          <p className={`text-6xl font-black tracking-tight ${isPicking ? 'text-indigo-500 animate-pulse' : 'text-slate-800'}`}>
+                            {lastPicked?.name || "..."}
+                          </p>
+                          <p className={`text-slate-400 ${isPicking ? 'animate-pulse opacity-50' : ''}`}>
+                            {lastPicked?.studentId || " "}
+                          </p>
                         </div>
                       ) : (
                         <p className="text-slate-300 text-2xl font-light">点击下方按钮开始</p>
@@ -420,11 +444,15 @@ const App: React.FC = () => {
                   </div>
 
                   <button
-                    disabled={students.length === 0 || isPicking}
+                    disabled={students.length === 0}
                     onClick={pickStudent}
-                    className="w-full max-w-md mx-auto bg-indigo-600 text-white text-xl font-bold py-6 rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 active:translate-y-0 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`w-full max-w-md mx-auto text-white text-xl font-bold py-6 rounded-2xl shadow-lg hover:-translate-y-1 active:translate-y-0 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isPicking 
+                        ? 'bg-red-500 hover:bg-red-600 shadow-red-200 animate-pulse' 
+                        : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200'
+                    }`}
                   >
-                    随机抽取一位学生
+                    {isPicking ? "停！" : "随机抽取一位学生"}
                   </button>
                 </div>
 
