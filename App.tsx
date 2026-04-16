@@ -320,8 +320,11 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+              <div 
+                className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 lg:-mt-24 relative z-10 flex flex-col resize-y overflow-hidden"
+                style={{ height: 'calc(100vh - 120px)', minHeight: '400px' }}
+              >
+                <div className="p-6 border-b border-slate-100 flex justify-between items-center shrink-0">
                   <h3 className="font-semibold">当前学生列表 ({students.length})</h3>
                   <button
                     onClick={() => { if (confirm("确定要清空名单吗？")) { setStudents([]); setPool([]); } }}
@@ -330,7 +333,7 @@ const App: React.FC = () => {
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="max-h-[600px] overflow-y-auto">
+                <div className="flex-1 overflow-y-auto">
                   {students.length === 0 ? (
                     <div className="p-12 text-center text-slate-400">
                       尚未导入任何学生
