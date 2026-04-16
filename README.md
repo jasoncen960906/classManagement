@@ -4,43 +4,43 @@
 
 # SmartClass Assistant
 
-這是一個基於 React + Vite 開發的智慧課堂管理工具。
+这是一个基于 React + Vite 开发的智慧课堂管理工具。
 
-原始專案：[AI Studio App](https://ai.studio/apps/drive/1JjVsRTwvrElo_GZnHfpTK4E14nUk1nts)
+原始项目：[AI Studio App](https://ai.studio/apps/drive/1JjVsRTwvrElo_GZnHfpTK4E14nUk1nts)
 
 ## ✨ 功能特色
 
-- **學生名冊管理**：支援 CSV 匯入 (兼容 Excel 中文編碼) 與手動新增。
-- **隨機點名**：支援重複/不重複抽取，並帶有動畫效果。
-- **自動分組**：快速將學生隨機分組並可匯出結果。
+- **学生名册管理**：支持 CSV 导入 (兼容 Excel 中文编码) 与手动新增。
+- **随机点名**：支持重复/不重复抽取，并带有动画效果。
+- **自动分组**：快速将学生随机分组并可导出结果。
 
-## 🚀 快速開始
+## 🚀 快速开始
 
-### 環境需求
+### 环境需求
 
-- Node.js (推薦 v18 或以上)
+- Node.js (推荐 v18 或以上)
 
-### 安裝與執行
+### 安装与执行
 
-1. 安裝相依套件：
+1. 安装依赖：
    ```bash
    npm install
    ```
 
-2. 啟動開發伺服器：
+2. 启动开发服务器：
    ```bash
    npm run dev
    ```
 
 ## 📦 部署 (GitHub Actions)
 
-本專案已設定 GitHub Actions 自動部署至 GitHub Pages。
+本项目已设定 GitHub Actions 自动部署至 GitHub Pages。
 
-1. **自動部署**：
-   - 當您 push 程式碼到 `main` 分支時，GitHub Actions 會自動建置並部署。
-   - 部署完成後，請至 `Settings` > `Pages` 確認 Source 是否設定為 `gh-pages` 分支。
+1. **自动部署**：
+   - 当您 push 代码到 `main` 分支时，GitHub Actions 会自动构建并部署。
+   - 部署完成后，请至 `Settings` > `Pages` 确认 Source 是否设定为 `gh-pages` 分支。
 
-## 🛠️ 技術棧
+## 🛠️ 技术栈
 
 - React 19
 - Vite
@@ -48,9 +48,9 @@
 - Tailwind CSS
 - Lucide React Icons
 
-## 📂 專案結構說明
+## 📂 项目结构说明
 
-- `.github/workflows`: 自動化部署流程設定
-- `.gitignore`: 排除不必要的檔案 (node_modules, secrets, etc.)
-- `src`: 原始碼目錄
-  - `utils`: 工具函式 (CSV 解析等)
+- `.github/workflows`: 自动化部署流程设定
+- `.gitignore`: 排除不必要的文件 (node_modules, secrets, etc.)
+- `src`: 源码目录
+  - `utils`: 工具函数 (CSV 解析等)

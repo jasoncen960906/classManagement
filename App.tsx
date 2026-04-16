@@ -54,11 +54,11 @@ const App: React.FC = () => {
         setPool(parsed);
         setView(ViewMode.PICKER);
       } else {
-        alert("未能識別文件中的學生數據，請檢查格式。");
+        alert("未能识别文件中的学生数据，请检查格式。");
       }
     } catch (error) {
       console.error("File reading error:", error);
-      alert("讀取文件出錯，請重試。");
+      alert("读取文件出错，请重试。");
     }
 
     // Reset input value so the same file can be uploaded again if needed
@@ -86,7 +86,7 @@ const App: React.FC = () => {
     // "Drum roll" effect simulation
     let currentPool = repeatMode === 'repeat' ? students : pool;
     if (currentPool.length === 0 && repeatMode === 'no-repeat') {
-      alert("所有學生都已抽過！重新重置名單。");
+      alert("所有学生都已抽过！重新重置名单。");
       currentPool = students;
       setPool(students);
     }
@@ -143,7 +143,7 @@ const App: React.FC = () => {
     if (generatedGroups.length === 0) return;
 
     // Create CSV header
-    let csvContent = "小組編號,學生姓名,學號\n";
+    let csvContent = "小组编号,学生姓名,学号\n";
 
     // Add group members
     generatedGroups.forEach(group => {
@@ -158,7 +158,7 @@ const App: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `分組結果_${new Date().toLocaleDateString()}.csv`);
+    link.setAttribute("download", `分组结果_${new Date().toLocaleDateString()}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -182,26 +182,26 @@ const App: React.FC = () => {
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${view === ViewMode.ROSTER ? 'bg-white/20 shadow-lg' : 'hover:bg-white/10'}`}
           >
             <Users className="w-5 h-5" />
-            <span className="font-medium">學生名冊</span>
+            <span className="font-medium">学生名册</span>
           </button>
           <button
             onClick={() => setView(ViewMode.PICKER)}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${view === ViewMode.PICKER ? 'bg-white/20 shadow-lg' : 'hover:bg-white/10'}`}
           >
             <RefreshCw className="w-5 h-5" />
-            <span className="font-medium">隨機點名</span>
+            <span className="font-medium">随机点名</span>
           </button>
           <button
             onClick={() => setView(ViewMode.GROUPER)}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${view === ViewMode.GROUPER ? 'bg-white/20 shadow-lg' : 'hover:bg-white/10'}`}
           >
             <Layers className="w-5 h-5" />
-            <span className="font-medium">自動分組</span>
+            <span className="font-medium">自动分组</span>
           </button>
         </div>
 
         <div className="mt-auto pt-6 border-t border-indigo-800 text-xs text-indigo-300">
-          <p>當前學生總數: <span className="text-white font-bold">{students.length}</span></p>
+          <p>当前学生总数: <span className="text-white font-bold">{students.length}</span></p>
         </div>
       </nav>
 
@@ -211,21 +211,21 @@ const App: React.FC = () => {
         <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 className="text-3xl font-bold text-slate-800">
-              {view === ViewMode.ROSTER && "管理名單"}
-              {view === ViewMode.PICKER && "課堂隨機點名"}
-              {view === ViewMode.GROUPER && "智能自動分組"}
+              {view === ViewMode.ROSTER && "管理名单"}
+              {view === ViewMode.PICKER && "课堂随机点名"}
+              {view === ViewMode.GROUPER && "智能自动分组"}
             </h2>
             <p className="text-slate-500 mt-1">
-              {view === ViewMode.ROSTER && "上傳CSV或手動輸入學生姓名（支持Excel導出的中文格式）"}
-              {view === ViewMode.PICKER && "隨機挑選學生回答問題"}
-              {view === ViewMode.GROUPER && "快速為班級學生分配小組並導出結果"}
+              {view === ViewMode.ROSTER && "上传CSV或手动输入学生姓名（支持Excel导出的中文格式）"}
+              {view === ViewMode.PICKER && "随机挑选学生回答问题"}
+              {view === ViewMode.GROUPER && "快速为班级学生分配小组并导出结果"}
             </p>
           </div>
 
           {students.length === 0 && view !== ViewMode.ROSTER && (
             <div className="flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-lg border border-amber-200">
               <Info className="w-4 h-4" />
-              <span className="text-sm font-medium">請先在名冊頁面上傳名單</span>
+              <span className="text-sm font-medium">请先在名册页面上传名单</span>
             </div>
           )}
         </header>
@@ -240,29 +240,29 @@ const App: React.FC = () => {
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                   <h3 className="font-semibold mb-4 flex items-center gap-2">
                     <Upload className="w-4 h-4 text-indigo-600" />
-                    批量導入
+                    批量导入
                   </h3>
                   <label className="block w-full cursor-pointer">
                     <div className="border-2 border-dashed border-slate-300 hover:border-indigo-400 hover:bg-indigo-50 transition-all rounded-xl p-8 text-center">
                       <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-                      <p className="text-sm font-medium text-slate-600">選擇 CSV 文件</p>
-                      <p className="text-xs text-slate-400 mt-1">自動識別 UTF-8 或 GBK 編碼</p>
+                      <p className="text-sm font-medium text-slate-600">选择 CSV 文件</p>
+                      <p className="text-xs text-slate-400 mt-1">自动识别 UTF-8 或 GBK 编码</p>
                       <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
                     </div>
                   </label>
                 </div>
 
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                  <h3 className="font-semibold mb-4">手動新增</h3>
+                  <h3 className="font-semibold mb-4">手动新增</h3>
                   <form onSubmit={handleManualInput} className="space-y-4">
                     <textarea
                       name="studentNames"
-                      placeholder="每行一個姓名，例如：&#10;王小明&#10;李大華"
+                      placeholder="每行一个姓名，例如：&#10;王小明&#10;李大华"
                       rows={5}
                       className="w-full border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm"
                     />
                     <button type="submit" className="w-full bg-slate-800 text-white py-2 rounded-xl hover:bg-slate-700 transition-colors">
-                      新增至名單
+                      新增至名单
                     </button>
                   </form>
                 </div>
@@ -270,9 +270,9 @@ const App: React.FC = () => {
 
               <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-                  <h3 className="font-semibold">當前學生列表 ({students.length})</h3>
+                  <h3 className="font-semibold">当前学生列表 ({students.length})</h3>
                   <button
-                    onClick={() => { if (confirm("確定要清空名單嗎？")) { setStudents([]); setPool([]); } }}
+                    onClick={() => { if (confirm("确定要清空名单吗？")) { setStudents([]); setPool([]); } }}
                     className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -281,14 +281,14 @@ const App: React.FC = () => {
                 <div className="max-h-[600px] overflow-y-auto">
                   {students.length === 0 ? (
                     <div className="p-12 text-center text-slate-400">
-                      尚未導入任何學生
+                      尚未导入任何学生
                     </div>
                   ) : (
                     <table className="w-full text-left">
                       <thead className="bg-slate-50 text-slate-500 text-xs uppercase sticky top-0">
                         <tr>
                           <th className="px-6 py-3 font-semibold">姓名</th>
-                          <th className="px-6 py-3 font-semibold">學號</th>
+                          <th className="px-6 py-3 font-semibold">学号</th>
                           <th className="px-6 py-3 font-semibold">操作</th>
                         </tr>
                       </thead>
@@ -323,12 +323,12 @@ const App: React.FC = () => {
                   <div className="absolute top-0 left-0 w-full h-2 bg-indigo-500" />
 
                   <div className="mb-8">
-                    <h3 className="text-slate-400 font-medium mb-2">點名結果</h3>
+                    <h3 className="text-slate-400 font-medium mb-2">点名结果</h3>
                     <div className="h-40 flex items-center justify-center">
                       {isPicking ? (
                         <div className="flex flex-col items-center gap-4">
                           <RefreshCw className="w-12 h-12 text-indigo-500 animate-spin" />
-                          <p className="text-indigo-600 font-bold animate-pulse text-xl">挑選中...</p>
+                          <p className="text-indigo-600 font-bold animate-pulse text-xl">挑选中...</p>
                         </div>
                       ) : lastPicked ? (
                         <div className="space-y-2">
@@ -336,7 +336,7 @@ const App: React.FC = () => {
                           <p className="text-slate-400">{lastPicked.studentId}</p>
                         </div>
                       ) : (
-                        <p className="text-slate-300 text-2xl font-light">點擊下方按鈕開始</p>
+                        <p className="text-slate-300 text-2xl font-light">点击下方按钮开始</p>
                       )}
                     </div>
                   </div>
@@ -347,20 +347,20 @@ const App: React.FC = () => {
                         onClick={() => setRepeatMode('no-repeat')}
                         className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${repeatMode === 'no-repeat' ? 'bg-white shadow text-indigo-600' : 'text-slate-500'}`}
                       >
-                        不重複抽取
+                        不重复抽取
                       </button>
                       <button
                         onClick={() => setRepeatMode('repeat')}
                         className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${repeatMode === 'repeat' ? 'bg-white shadow text-indigo-600' : 'text-slate-500'}`}
                       >
-                        重複抽取
+                        重复抽取
                       </button>
                     </div>
                     <button
                       onClick={resetPool}
                       className="flex items-center gap-2 px-4 py-2 text-slate-500 hover:text-indigo-600 transition-colors text-sm font-medium"
                     >
-                      <RefreshCw className="w-4 h-4" /> 重置名單
+                      <RefreshCw className="w-4 h-4" /> 重置名单
                     </button>
                   </div>
 
@@ -369,7 +369,7 @@ const App: React.FC = () => {
                     onClick={pickStudent}
                     className="w-full max-w-md mx-auto bg-indigo-600 text-white text-xl font-bold py-6 rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-1 active:translate-y-0 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    隨機抽取一位學生
+                    随机抽取一位学生
                   </button>
                 </div>
 
@@ -378,7 +378,7 @@ const App: React.FC = () => {
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-slate-700 flex items-center gap-2">
                       <Users className="w-5 h-5 text-indigo-500" />
-                      名單狀態
+                      名单状态
                     </h3>
                     <div className="flex gap-4 text-xs font-medium">
                       <div className="flex items-center gap-1">
@@ -420,11 +420,11 @@ const App: React.FC = () => {
                 <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 h-full">
                   <h3 className="font-bold flex items-center gap-2 mb-6">
                     <History className="w-5 h-5 text-slate-400" />
-                    點名紀錄
+                    点名纪录
                   </h3>
                   <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                     {history.length === 0 ? (
-                      <p className="text-slate-400 text-sm italic">尚無紀錄</p>
+                      <p className="text-slate-400 text-sm italic">尚无纪录</p>
                     ) : (
                       history.map((item, idx) => (
                         <div key={item.timestamp} className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
@@ -432,7 +432,7 @@ const App: React.FC = () => {
                           <div>
                             <p className="font-semibold text-slate-800">{item.studentName}</p>
                             <p className="text-[10px] text-slate-400">
-                              {new Date(item.timestamp).toLocaleTimeString()} · {item.mode === 'repeat' ? '可重複' : '不可重複'}
+                              {new Date(item.timestamp).toLocaleTimeString()} · {item.mode === 'repeat' ? '可重复' : '不可重复'}
                             </p>
                           </div>
                         </div>
@@ -450,7 +450,7 @@ const App: React.FC = () => {
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div className="flex flex-col md:flex-row md:items-center gap-6">
                   <div className="flex-1 space-y-2">
-                    <label className="text-sm font-semibold text-slate-600">每組人數</label>
+                    <label className="text-sm font-semibold text-slate-600">每组人数</label>
                     <div className="flex items-center gap-4">
                       <input
                         type="range"
@@ -471,7 +471,7 @@ const App: React.FC = () => {
                       disabled={students.length === 0}
                       className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
                     >
-                      開始隨機分組
+                      开始随机分组
                     </button>
                     {generatedGroups.length > 0 && (
                       <button
@@ -479,7 +479,7 @@ const App: React.FC = () => {
                         className="bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-xl font-bold hover:bg-slate-50 transition-all flex items-center gap-2"
                       >
                         <Download className="w-4 h-4" />
-                        下載 CSV
+                        下载 CSV
                       </button>
                     )}
                   </div>
@@ -491,9 +491,9 @@ const App: React.FC = () => {
                   {generatedGroups.map(group => (
                     <div key={group.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:border-indigo-300 transition-colors">
                       <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex justify-between items-center">
-                        <span className="font-bold text-slate-700">小組 {group.id}</span>
+                        <span className="font-bold text-slate-700">小组 {group.id}</span>
                         <span className="text-xs font-medium text-slate-400 bg-white px-2 py-1 rounded-full border border-slate-100">
-                          {group.members.length} 位成員
+                          {group.members.length} 位成员
                         </span>
                       </div>
                       <div className="p-4 space-y-2">
