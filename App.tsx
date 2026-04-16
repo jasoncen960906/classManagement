@@ -13,6 +13,7 @@ import {
 import { Student, Group, ViewMode, PickerHistoryItem } from './types';
 import { parseCSV } from './utils/csvParser';
 import confetti from 'canvas-confetti';
+import * as XLSX from 'xlsx';
 
 const App: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
@@ -32,8 +33,11 @@ const App: React.FC = () => {
 
   // File Processing Logic
   const processFile = async (file: File) => {
-    if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') {
-      alert("请上传 CSV 格式的文件。");
+    const isCSV = file.name.toLowerCase().endsWith('.csv') || file.type === 'text/csv';
+    const isExcel = file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls');
+
+    if (!isCSV && !isExcel) {
+      alert("请上传 CSV 或 Excel 格式的文件。");
       return;
     }
 
@@ -41,14 +45,21 @@ const App: React.FC = () => {
       const buffer = await file.arrayBuffer();
       let text = '';
 
-      try {
-        // First try to decode as UTF-8 (strict mode)
-        const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
-        text = utf8Decoder.decode(buffer);
-      } catch (err) {
-        // If UTF-8 fails (e.g., file is GBK from Excel), fallback to GBK
-        const gbkDecoder = new TextDecoder('gbk');
-        text = gbkDecoder.decode(buffer);
+      if (isExcel) {
+        const workbook = XLSX.read(buffer, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        text = XLSX.utils.sheet_to_csv(worksheet);
+      } else {
+        try {
+          // First try to decode as UTF-8 (strict mode)
+          const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+          text = utf8Decoder.decode(buffer);
+        } catch (err) {
+          // If UTF-8 fails (e.g., file is GBK from Excel), fallback to GBK
+          const gbkDecoder = new TextDecoder('gbk');
+          text = gbkDecoder.decode(buffer);
+        }
       }
 
       const parsed = parseCSV(text);
@@ -248,7 +259,7 @@ const App: React.FC = () => {
               {view === ViewMode.GROUPER && "智能自动分组"}
             </h2>
             <p className="text-slate-500 mt-1">
-              {view === ViewMode.ROSTER && "上传CSV或手动输入学生姓名（支持Excel导出的中文格式）"}
+              {view === ViewMode.ROSTER && "上传CSV或Excel表格、手动输入学生姓名"}
               {view === ViewMode.PICKER && "随机挑选学生回答问题"}
               {view === ViewMode.GROUPER && "快速为班级学生分配小组并导出结果"}
             </p>
@@ -284,11 +295,11 @@ const App: React.FC = () => {
                       <div className="pointer-events-none">
                         <Upload className={`w-10 h-10 mx-auto mb-3 ${isDragging ? 'text-indigo-500' : 'text-slate-400'}`} />
                         <p className="text-sm font-medium text-slate-600">
-                          {isDragging ? "松手将其上传" : "点击或拖拽 CSV 文件至此处"}
+                          {isDragging ? "松手将其上传" : "点击或拖拽 CSV / Excel 文件至此处"}
                         </p>
-                        <p className="text-xs text-slate-400 mt-1">自动识别 UTF-8 或 GBK 编码</p>
+                        <p className="text-xs text-slate-400 mt-1">支持常见表格格式 (.csv, .xlsx, .xls)</p>
                       </div>
-                      <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
+                      <input type="file" accept=".csv,.xlsx,.xls" onChange={handleFileUpload} className="hidden" />
                     </div>
                   </label>
                 </div>
