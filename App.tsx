@@ -18,6 +18,7 @@ const App: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [view, setView] = useState<ViewMode>(ViewMode.ROSTER);
   const [history, setHistory] = useState<PickerHistoryItem[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Picker State
   const [lastPicked, setLastPicked] = useState<Student | null>(null);
@@ -29,10 +30,12 @@ const App: React.FC = () => {
   const [groupSize, setGroupSize] = useState(4);
   const [generatedGroups, setGeneratedGroups] = useState<Group[]>([]);
 
-  // File Upload Handler with Encoding Detection
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // File Processing Logic
+  const processFile = async (file: File) => {
+    if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') {
+      alert("请上传 CSV 格式的文件。");
+      return;
+    }
 
     try {
       const buffer = await file.arrayBuffer();
@@ -60,9 +63,38 @@ const App: React.FC = () => {
       console.error("File reading error:", error);
       alert("读取文件出错，请重试。");
     }
+  };
+
+  // File Upload Handler with Encoding Detection
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    await processFile(file);
 
     // Reset input value so the same file can be uploaded again if needed
     e.target.value = '';
+  };
+
+  // Drag and Drop Handlers
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      await processFile(file);
+    }
   };
 
   const handleManualInput = (e: React.FormEvent<HTMLFormElement>) => {
@@ -242,11 +274,20 @@ const App: React.FC = () => {
                     <Upload className="w-4 h-4 text-indigo-600" />
                     批量导入
                   </h3>
-                  <label className="block w-full cursor-pointer">
-                    <div className="border-2 border-dashed border-slate-300 hover:border-indigo-400 hover:bg-indigo-50 transition-all rounded-xl p-8 text-center">
-                      <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-                      <p className="text-sm font-medium text-slate-600">选择 CSV 文件</p>
-                      <p className="text-xs text-slate-400 mt-1">自动识别 UTF-8 或 GBK 编码</p>
+                  <label 
+                    className="block w-full cursor-pointer"
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
+                    <div className={`border-2 border-dashed transition-all rounded-xl p-8 text-center ${isDragging ? 'border-indigo-500 bg-indigo-100' : 'border-slate-300 hover:border-indigo-400 hover:bg-indigo-50'}`}>
+                      <div className="pointer-events-none">
+                        <Upload className={`w-10 h-10 mx-auto mb-3 ${isDragging ? 'text-indigo-500' : 'text-slate-400'}`} />
+                        <p className="text-sm font-medium text-slate-600">
+                          {isDragging ? "松手将其上传" : "点击或拖拽 CSV 文件至此处"}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">自动识别 UTF-8 或 GBK 编码</p>
+                      </div>
                       <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
                     </div>
                   </label>
